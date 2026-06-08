@@ -1,0 +1,30 @@
+appId: com.smartrc.app
+productName: Smart RC
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+asarUnpack:
+  - "**/node_modules/sharp/**"
+  - "**/node_modules/@img/**"
+  - "**/node_modules/@prisma/**"
+  - "**/node_modules/.prisma/**"
+extraResources:
+  - from: prisma/schema.prisma
+    to: prisma/schema.prisma
+mac:
+  target: dmg
+  category: public.app-category.business
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+# Auto-update feed. REQUIRED: replace owner/repo with your GitHub account + repo
+# name before releasing. Clients check these GitHub Releases for new versions.
+publish:
+  provider: github
+  owner: REPLACE_WITH_GITHUB_OWNER
+  repo: REPLACE_WITH_REPO_NAME

@@ -1,0 +1,52 @@
+{
+  "name": "smart-rc",
+  "version": "0.1.0",
+  "description": "Smart RC PVC Card Designer & Printing (Tamil Nadu)",
+  "main": "./out/main/index.js",
+  "author": "Smart RC",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "dist:mac": "electron-vite build && electron-builder --mac",
+    "dist:win": "electron-vite build && electron-builder --win",
+    "release:mac": "electron-vite build && electron-builder --mac --publish always",
+    "release:win": "electron-vite build && electron-builder --win --publish always"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.6",
+    "@mui/material": "^6.1.6",
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^2.4.3",
+    "electron-updater": "^6.8.9",
+    "fabric": "^6.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "sharp": "^0.33.5",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20.16.11",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "electron": "^31.7.2",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "prisma": "^5.22.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}
