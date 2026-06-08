@@ -1,6 +1,6 @@
 {
   "name": "smart-rc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Smart RC PVC Card Designer & Printing (Tamil Nadu)",
   "main": "./out/main/index.js",
   "author": "Smart RC",
