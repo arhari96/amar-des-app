@@ -27,4 +27,4 @@ nsis:
 publish:
   provider: github
   owner: arhari96
-  repo: smart-rc
+  repo: amar-des-app
