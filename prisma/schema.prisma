@@ -1,4 +1,3 @@
-// Smart RC — database schema (remote MySQL).
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,22 +7,120 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id          Int            @id @default(autoincrement())
+  username    String         @unique
+  password    String
+  name        String?
+  role        Role           @default(OPERATOR)
+  createdAt   DateTime       @default(now())
+  balance     Float          @default(0)
+  cardsSaved  Int            @default(0)
+  costPerSave Float          @default(0)
+  telegramId  String?
+  upiId       String?
+  auditLogs   AuditLog[]
+  printJobs   PrintHistory[]
+}
+
+model Template {
+  id            Int            @id @default(autoincrement())
+  name          String
+  frontTemplate String?
+  backTemplate  String?
+  dpi           Int            @default(300)
+  width         Int            @default(1011)
+  height        Int            @default(638)
+  status        String         @default("active")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  layouts       Layout[]
+  printJobs     PrintHistory[]
+}
+
+model Layout {
+  id         Int            @id @default(autoincrement())
+  templateId Int
+  name       String
+  layoutJson String         @db.LongText
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  mappings   FieldMapping[]
+  template   Template       @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  printJobs  PrintHistory[]
+
+  @@index([templateId], map: "Layout_templateId_fkey")
+}
+
+model FieldMapping {
+  id          Int    @id @default(autoincrement())
+  layoutId    Int
+  fieldName   String
+  sourceField String
+  layout      Layout @relation(fields: [layoutId], references: [id], onDelete: Cascade)
+
+  @@unique([layoutId, fieldName])
+}
+
+model PrintHistory {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  templateId Int?
+  layoutId   Int?
+  cardNumber String?
+  status     JobStatus @default(PENDING)
+  imagePath  String?
+  printedAt  DateTime  @default(now())
+  layout     Layout?   @relation(fields: [layoutId], references: [id])
+  template   Template? @relation(fields: [templateId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@index([layoutId], map: "PrintHistory_layoutId_fkey")
+  @@index([templateId], map: "PrintHistory_templateId_fkey")
+  @@index([userId], map: "PrintHistory_userId_fkey")
+}
+
+model ApiSetting {
+  id        Int      @id @default(autoincrement())
+  name      String   @default("default")
+  baseUrl   String
+  authType  AuthType @default(BEARER)
+  token     String?
+  apiKey    String?
+  headers   String?  @db.LongText
+  createdAt DateTime @default(now())
+}
+
+model DatabaseSetting {
+  id           Int      @id @default(autoincrement())
+  host         String
+  port         Int      @default(3306)
+  databaseName String
+  username     String
+  password     String
+  createdAt    DateTime @default(now())
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String
+  meta      String?  @db.LongText
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "AuditLog_userId_fkey")
+}
+
+model AppSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String @db.Text
+}
+
 enum Role {
   ADMIN
   OPERATOR
-}
-
-enum CardSide {
-  FRONT
-  BACK
-}
-
-enum FieldType {
-  TEXT
-  QR
-  BARCODE
-  PHOTO
-  SIGNATURE
 }
 
 enum JobStatus {
@@ -37,108 +134,4 @@ enum AuthType {
   BEARER
   API_KEY
   BASIC
-}
-
-model User {
-  id          Int            @id @default(autoincrement())
-  username    String         @unique
-  password    String // bcrypt hash
-  name        String?
-  role        Role           @default(OPERATOR)
-  balance     Float          @default(0)
-  costPerSave Float          @default(0)
-  cardsSaved  Int            @default(0)
-  upiId       String?
-  telegramId  String?
-  printJobs   PrintHistory[]
-  auditLogs   AuditLog[]
-  createdAt   DateTime       @default(now())
-}
-
-model Template {
-  id            Int            @id @default(autoincrement())
-  name          String
-  frontTemplate String? // stored image path / filename
-  backTemplate  String?
-  dpi           Int            @default(300)
-  width         Int            @default(1011)
-  height        Int            @default(638)
-  status        String         @default("active")
-  layouts       Layout[]
-  printJobs     PrintHistory[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-}
-
-model Layout {
-  id         Int            @id @default(autoincrement())
-  template   Template       @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  templateId Int
-  name       String
-  // Full canvas layout: fields with x/y/size/font/color/side/type/etc.
-  layoutJson Json
-  mappings   FieldMapping[]
-  printJobs  PrintHistory[]
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-}
-
-model FieldMapping {
-  id          Int    @id @default(autoincrement())
-  layout      Layout @relation(fields: [layoutId], references: [id], onDelete: Cascade)
-  layoutId    Int
-  fieldName   String // designer field, e.g. "reg_number"
-  sourceField String // data source key, e.g. "registration_number"
-
-  @@unique([layoutId, fieldName])
-}
-
-model PrintHistory {
-  id         Int       @id @default(autoincrement())
-  user       User      @relation(fields: [userId], references: [id])
-  userId     Int
-  template   Template? @relation(fields: [templateId], references: [id])
-  templateId Int?
-  layout     Layout?   @relation(fields: [layoutId], references: [id])
-  layoutId   Int?
-  cardNumber String?
-  status     JobStatus @default(PENDING)
-  imagePath  String?
-  printedAt  DateTime  @default(now())
-}
-
-model ApiSetting {
-  id        Int      @id @default(autoincrement())
-  name      String   @default("default")
-  baseUrl   String
-  authType  AuthType @default(BEARER)
-  token     String?
-  apiKey    String?
-  headers   Json?
-  createdAt DateTime @default(now())
-}
-
-model DatabaseSetting {
-  id           Int      @id @default(autoincrement())
-  host         String
-  port         Int      @default(3306)
-  databaseName String
-  username     String
-  password     String // encrypted at rest
-  createdAt    DateTime @default(now())
-}
-
-model AuditLog {
-  id        Int      @id @default(autoincrement())
-  user      User?    @relation(fields: [userId], references: [id])
-  userId    Int?
-  action    String
-  meta      Json?
-  createdAt DateTime @default(now())
-}
-
-model AppSetting {
-  id    Int    @id @default(autoincrement())
-  key   String @unique
-  value String @db.Text
 }
